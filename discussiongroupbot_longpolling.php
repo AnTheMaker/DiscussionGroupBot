@@ -1,5 +1,7 @@
 <?php
 
+// IMPORTANT: This is a beta version of the bot using long-polling instead of webhooks
+
 $bottoken = 'your_token_goes_here'; // Put your Telegram Bot token here
 
 $api_base = 'https://api.telegram.org/bot'.$bottoken.'/';
