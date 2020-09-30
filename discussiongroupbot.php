@@ -26,7 +26,6 @@ Make me admin in your group and I will automatically remove all forwarded posts 
   }
 }
 
-
 header('Content-Type: application/json');
 echo json_encode($out);
 die();
