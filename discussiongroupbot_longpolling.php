@@ -1,37 +1,103 @@
+#!/usr/bin/php
 <?php
-
+$config = json_decode('{
+  "telegram":{
+    "root": 123456789,
+    "token":"YOUR API TOKEN HERE"
+  }
+}');
 // IMPORTANT: This is a beta version of the bot using long-polling instead of webhooks
 
-$bottoken = 'your_token_goes_here'; // Put your Telegram Bot token here
 
-$api_base = 'https://api.telegram.org/bot'.$bottoken.'/';
-$content = file_get_contents($api_base.'getUpdates');
-$updates = json_decode($content, true);
+class TelegramBotAPIWrapper{
+  const API_BASE = 'https://api.telegram.org/bot';
+  public $token;
 
-if($updates['result']){
-  foreach($updates['result'] as $key=>$update){
-  
-    $type = $update['message']['chat']['type'];
-    $chatID = $update['message']['chat']['id'];
-    $msg = strtolower($update['message']['text']);
-    $msg_id = $update['message']['message_id'];
-    $msg_from_id = $update['message']['from']['id'];
-    $update_id = $update['update_id'];
+  public function __construct($token){
+    $this->token = $token; 
+  }
+
+  public function __call($name, $args){
+     return $this->sendRequest($name, $args[0]);
+  }
+
+  public function sendRequest($method, $params = []){
     
-    if($msg == '/start' || $msg == '/start@discussiongroupbot'){
-      $txt = '_Hello, nice to meet you!_
-    Make me admin in your group and I will automatically remove all forwarded posts from your linked channel so the group doesn\'t get filled with channel messages!
-
-    *Bot dev:* @PartyGuy';
-      file_get_contents($api_base.'sendMessage?chat_id='.urlencode($chatID).'&text='.urlencode($txt).'&parse_mode=Markdown&reply_to_message_id='.urlencode($msg_id));
+    if(empty($params)){
+      $opts = [
+        "http" => [
+            "method"  => "GET",
+        ]
+      ];
     }else{
-      if($msg_from_id == 777000){
-        file_get_contents($api_base.'deleteMessage?chat_id='.urlencode($chatID).'&message_id='.urlencode($msg_id));
-      }
+      
+      $opts = [
+        "http" => [
+          "method"  => "POST",
+          "header"  => "Content-Type: application/json\r\n",
+          "content" => json_encode($params),
+          "timeout" => $params["timeout"] ?? 1,
+        ]
+      ];
     }
-
-    file_get_contents($api_base.'getUpdates?offset='.($update_id+1));
+    
+    $context = stream_context_create($opts);
+    $content = file_get_contents(SELF::API_BASE.$this->token."/$method",false, $context);
+    return json_decode($content);
   }
 }
-die('ok');
-?>
+  
+$bot = new TelegramBotAPIWrapper($config->telegram->token);
+$offset = 0;
+$bot->sendMessage([
+  "chat_id" => $config->telegram->root,
+  "text" => "I am alive!",
+]);
+
+$running = true;
+while($running){
+  echo "Getting updates...";
+  $updates = $bot->getUpdates(["offset" => $offset, "timeout" => 60]);
+  
+  if(empty($updates->result)){
+     echo " Received 0 or malformed updates. Lets continue\n";
+     continue;
+   }
+  echo " Received ".count($updates->result)." Updates.\n";
+  echo "Parsing them...\n";
+  if($updates->ok === true){
+    foreach($updates->result as $update){
+      $offset = $update->update_id+1;
+      if(
+        isset($update->message->from->id) && 
+        $update->message->from->id == 777000
+      ){
+        if($bot->deleteMessage([
+          "chat_id" => $update->message->chat->id,
+          "message_id" =>  $update->message->message_id,
+        ])){
+          echo "  Deleted message.\n";
+          
+        }else{
+          echo "  Some error happened.\n";
+        }
+      }
+      elseif(isset($update->message->text)){
+        $msg = strtolower($update->message->text);
+        if($msg == '/start' || $msg == '/start@discussiongroupbot'){
+          $txt = '_Hello, nice to meet you!_'."\n"
+          .'    Make me admin in your group and I will automatically remove all forwarded posts from your linked channel so the group doesn\'t get filled with channel messages!'."\n"
+          .'    *Bot dev:* @PartyGuy';
+          
+          $bot->sendMessage([
+            "chat_id" => $update->message->chat->id,
+            "text" => $txt,
+            "parse_mode" => "markdown",
+            "reply_to_message_id" => $update->message->message_id,
+          ]);
+          echo "  Sent Start message.\n";
+        }
+      }
+    }
+  }
+}
