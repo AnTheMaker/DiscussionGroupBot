@@ -86,8 +86,8 @@ while($running){
         $msg = strtolower($update->message->text);
         if($msg == '/start' || $msg == '/start@discussiongroupbot'){
           $txt = '_Hello, nice to meet you!_'."\n"
-          .'    Make me admin in your group and I will automatically remove all forwarded posts from your linked channel so the group doesn\'t get filled with channel messages!'."\n"
-          .'    *Bot dev:* @PartyGuy';
+          .'Make me admin in your group and I will automatically remove all forwarded posts from your linked channel so the group doesn\'t get filled with channel messages!'."\n"
+          .'Bot made by @PartyGuy and @FabianPastor';
           
           $bot->sendMessage([
             "chat_id" => $update->message->chat->id,
