@@ -16,7 +16,8 @@ if($msg == '/start' || $msg == '/start@discussiongroupbot'){
   $txt = '_Hello, nice to meet you!_
 Make me admin in your group and I will automatically remove all forwarded posts from your linked channel so the group doesn\'t get filled with channel messages!
 
-*Bot dev:* @PartyGuy';
+*Bot dev:* @PartyGuy
+*Currently maintained by:* @FabianPastor';
 
   $out = ['method'=>'sendMessage', 'chat_id' =>$chatID, 'text'=>$txt, 'parse_mode'=>'Markdown', 'reply_to_message_id'=>$msg_id];
 
