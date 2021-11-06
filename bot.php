@@ -1,8 +1,8 @@
 #!/usr/bin/env php
 <?php
 error_reporting(E_ALL);
-require_once "src/Loggers.php";
 require_once "src/BotAPI.php";
+require_once "src/Loggers.php";
 
 use DiscussionBot\BotAPI;
 use DiscussionBot\TerminalLogger;
