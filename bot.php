@@ -52,7 +52,7 @@ while($running){
               "chat_id"    => $update->message->chat->id,
               "text" => "<i>Hello, nice to meet you!</i>\n"
                       . "Make me admin in your group and I will automatically remove all forwarded posts from your linked channel so the group doesn't get filled with channel messages!\n\n"
-                      . "<b>Bot dev:</b> @PartyGuy",
+                      . "<b>Bot dev:</b> @PartyGuy and @FabianPastor",
               "parse_mode" => "html",
               "reply_to_message_id" => $update->message->message_id,
             ]);
