@@ -30,13 +30,8 @@ while($running){
   if($response = $bot->getUpdates()){
     if($response->ok && !empty($response->result) ){
       foreach($response->result as $update){
-        //Note: This will remove messages from actual users joining on the group as the linked channel and forwarding a message from the channel
-        if(
-          isset($update->message->from->id) && 
-          $update->message->from->id === 777000 &&
-          isset($update->message->forward_from_chat->id) &&
-          $update->message->sender_chat->id === $update->message->forward_from_chat->id
-        ){
+        //New botapi v5.5
+        if( $update->message->is_automatic_forward ?? false ){
           $terminal->log("Deleting message on {$update->message->chat->id}");
           $bot->deleteMessage([
             "chat_id"    => $update->message->chat->id,
